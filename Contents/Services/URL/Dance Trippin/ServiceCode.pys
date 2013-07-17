@@ -1,0 +1,69 @@
+JSON_URL = 'http://player.dancetrippin.tv/video/list/%s/'
+
+####################################################################################################
+def NormalizeURL(url):
+
+	return url
+
+####################################################################################################
+def MetadataObjectForURL(url):
+
+	(url, category_id) = url.split('#')
+	slug = url.split('/')[-2]
+
+	for video in JSON.ObjectFromURL('http://player.dancetrippin.tv/video/list/%s/' % category_id):
+
+		if video['slug'] == slug:
+
+			title = video['title']
+			summary = String.DecodeHTMLEntities(String.StripTags(video['description'])).strip()
+
+			if video['image']:
+				thumb = 'http://player.dancetrippin.tv/media/%s' % video['image']
+
+			return VideoClipObject(
+				title = title,
+				summary = summary,
+				thumb = Resource.ContentsOfURLWithFallback(url=thumb, fallback=ICON)
+			)
+
+	raise Ex.MediaNotAvailable
+
+####################################################################################################
+def MediaObjectsForURL(url):
+
+	return [
+		MediaObject(
+			parts = [PartObject(key=Callback(PlayVideo, url=url, quality='hd'))],
+			container = Container.MP4,
+			video_codec = VideoCodec.H264,
+			video_resolution = '720',
+			audio_codec = AudioCodec.AAC,
+			audio_channels = 2,
+			optimized_for_streaming = True
+		),
+		MediaObject(
+			parts = [PartObject(key=Callback(PlayVideo, url=url, quality='sd'))],
+			container = Container.MP4,
+			video_codec = VideoCodec.H264,
+			video_resolution = '480',
+			audio_codec = AudioCodec.AAC,
+			audio_channels = 2,
+			optimized_for_streaming = True
+		)
+	]
+
+####################################################################################################
+@indirect
+def PlayVideo(url, quality='hd'):
+
+	(url, category_id) = url.split('#')
+	url = '%s?q=%s' % (url, quality)
+
+	html = HTML.ElementFromURL(url)
+	vimeo_url = html.xpath('//a[contains(@href, "http://player.vimeo.com/external/")]/@href')
+
+	if len(vimeo_url) < 1:
+		raise Ex.MediaNotAvailable
+
+	return IndirectResponse(VideoClipObject, key=vimeo_url[0])
