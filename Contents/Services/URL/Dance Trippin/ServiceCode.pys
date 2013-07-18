@@ -1,4 +1,5 @@
 JSON_URL = 'http://player.dancetrippin.tv/video/list/%s/'
+ICON = 'icon-default.jpg'
 
 ####################################################################################################
 def NormalizeURL(url):
