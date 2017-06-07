@@ -4,11 +4,11 @@
 <dict>
 	<key>URL</key>
 	<dict>
-		<key>Dance Trippin</key>
+		<key>DanceTrippin TV</key>
 		<dict>
 			<key>URLPatterns</key>
 			<array>
-				<string>^http://player\.dancetrippin\.tv/video/[^/]+/#\w+</string>
+				<string>^http:\/\/www\.dancetrippin\.tv\/videos\/.+</string>
 			</array>
 		</dict>
 	</dict>
