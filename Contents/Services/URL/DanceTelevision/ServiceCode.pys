@@ -1,4 +1,5 @@
-ICON = 'icon-default.jpg'
+ICON = "icon-default.jpg"
+HTTP_HEADERS = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/604.5.6 (KHTML, like Gecko) Version/11.0.3 Safari/604.5.6"}
 
 ####################################################################################################
 def NormalizeURL(url):
@@ -8,7 +9,7 @@ def NormalizeURL(url):
 ####################################################################################################
 def MetadataObjectForURL(url):
 
-	html = HTML.ElementFromURL(url)
+	html = HTML.ElementFromURL(url, headers=HTTP_HEADERS)
 
 	title = html.xpath('//meta[@property="og:title"]/@content')[0]
 	summary = html.xpath('//meta[@property="og:description"]/@content')[0]
@@ -26,12 +27,11 @@ def MediaObjectsForURL(url):
 	return [
 		MediaObject(
 			parts = [
-				PartObject(key=Callback(PlayVideo, url=url))
+				PartObject(
+					key = HTTPLiveStreamURL(Callback(PlayVideo, url=url))
+				)
 			],
-			container = Container.MP4,
-			video_codec = VideoCodec.H264,
-			video_resolution = 1080,
-			audio_codec = AudioCodec.AAC,
+			video_resolution = 720,
 			audio_channels = 2,
 			optimized_for_streaming = True
 		)
@@ -41,8 +41,8 @@ def MediaObjectsForURL(url):
 @indirect
 def PlayVideo(url, **kwargs):
 
-	html = HTML.ElementFromURL(url)
+	html = HTML.ElementFromURL(url, headers=HTTP_HEADERS)
+	video_url = html.xpath('//video/source/@src')[0]
+	Log(" --> Video URL: {}".format(video_url))
 
-	video_url = 'http://www.dancetrippin.tv%s' % (html.xpath('//video/source/@src')[0])
-
-	return IndirectResponse(VideoClipObject, key=video_url)
+	return IndirectResponse(VideoClipObject, key=HTTPLiveStreamURL(url=video_url))
